@@ -4,9 +4,17 @@ on:
   workflow_dispatch:
 jobs:
   build:
-    runs-on: macos-26
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Select Xcode 27.2 (iOS 27.2 SDK)
+        run: |
+          ls /Applications | grep -i xcode || true
+          APP=$(ls -d /Applications/Xcode_27.2*.app 2>/dev/null | sort -V | tail -1)
+          if [ -z "$APP" ]; then echo "Xcode 27.2 not found on this runner"; xcodebuild -showsdks; exit 1; fi
+          sudo xcode-select -s "$APP"
+          xcodebuild -version
+          xcodebuild -showsdks | grep -i iphoneos
       - name: Install XcodeGen
         run: brew install xcodegen
       - name: Generate Xcode project
